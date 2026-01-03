@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Disiplin Hybrid (Cloud + Local)</title>
+    <title>E-Disiplin Online 110</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css">
@@ -11,7 +11,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -60,7 +60,7 @@
 <div class="container" style="max-width: 600px; padding-top: 20px;">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h4 class="fw-bold m-0">E-DISIPLIN 110</h4><small class="text-secondary">Hybrid (Cloud + Local)</small></div>
+        <div><h4 class="fw-bold m-0">E-DISIPLIN 110</h4><small class="text-secondary">Full Online Mode</small></div>
         <button onclick="location.reload()" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
     </div>
 
@@ -72,9 +72,10 @@
     <div class="card p-3 mb-3 shadow">
         
         <div class="mb-3 position-relative">
-            <label class="small text-info fw-bold mb-1">CARI SISWA</label>
+            <label class="small text-info fw-bold mb-1">CARI SISWA (ONLINE)</label>
             <input type="text" id="nama" class="form-control" onkeyup="searchName(this.value)" placeholder="Ketik nama siswa..." autocomplete="off">
             <div id="autocomplete-list" class="list-group position-absolute w-100 shadow" style="z-index: 100;"></div>
+            <div id="loading-siswa" class="text-muted small mt-1" style="display:none;"><i class="bi bi-cloud-download"></i> Sedang mengambil data siswa...</div>
         </div>
 
         <div class="row g-2 mb-3">
@@ -115,27 +116,19 @@
             <div class="accordion-item bg-dark border-secondary">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-dark text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#toolsBody">
-                        <i class="bi bi-folder2-open me-2"></i> Laporan & Database
+                        <i class="bi bi-folder2-open me-2"></i> Laporan & Data
                     </button>
                 </h2>
                 <div id="toolsBody" class="accordion-collapse collapse" data-bs-parent="#accordionTools">
                     <div class="accordion-body p-3">
                         <div class="row g-2 text-center">
-                            <div class="col-3">
+                            <div class="col-6">
                                 <button onclick="cetakLaporanPDF()" class="btn btn-outline-danger w-100 py-3 btn-icon" title="Download PDF"><i class="bi bi-file-pdf fs-3"></i></button>
-                                <small class="text-muted" style="font-size: 9px;">PDF</small>
+                                <small class="text-muted" style="font-size: 9px;">PDF LAPORAN</small>
                             </div>
-                            <div class="col-3">
+                            <div class="col-6">
                                 <button onclick="exportExcel()" class="btn btn-outline-success w-100 py-3 btn-icon" title="Download Excel"><i class="bi bi-file-earmark-excel fs-3"></i></button>
-                                <small class="text-muted" style="font-size: 9px;">EXCEL</small>
-                            </div>
-                            <div class="col-3">
-                                <button class="btn btn-outline-light w-100 py-3 btn-icon" data-bs-toggle="modal" data-bs-target="#modalSiswa" title="Input Siswa"><i class="bi bi-person-plus fs-3"></i></button>
-                                <small class="text-muted" style="font-size: 9px;">SISWA</small>
-                            </div>
-                            <div class="col-3">
-                                <button onclick="resetDatabase()" class="btn btn-outline-danger w-100 py-3 btn-icon" title="Reset Data"><i class="bi bi-trash3 fs-3"></i></button>
-                                <small class="text-muted" style="font-size: 9px;">RESET HP</small>
+                                <small class="text-muted" style="font-size: 9px;">EXCEL REKAP</small>
                             </div>
                         </div>
                     </div>
@@ -145,7 +138,7 @@
     </div>
     
     <div class="toggle-header d-flex justify-content-between align-items-center mt-4 mb-2 py-2">
-        <h6 class="text-muted small fw-bold m-0">DATA DARI CLOUD (Google Sheets)</h6>
+        <h6 class="text-muted small fw-bold m-0">RIWAYAT (GOOGLE SHEETS)</h6>
         <span id="loading-badge" class="badge bg-warning text-dark" style="display:none;">Loading...</span>
     </div>
     <div id="logList" class="pb-5"></div>
@@ -161,11 +154,9 @@
                     <button id="btn-cetak-sp" class="btn btn-outline-primary btn-sm me-2 border-0" title="Cetak SP (PDF)">
                         <i class="bi bi-printer-fill"></i>
                     </button>
-                    
                     <button id="btn-hapus-cloud" class="btn btn-outline-danger btn-sm me-3 border-0" title="Hapus Data Selamanya">
                         <i class="bi bi-trash3-fill"></i>
                     </button>
-                    
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
@@ -180,27 +171,7 @@
                 </div>
                 <img id="det-foto" src="" onclick="openLightbox(this.src)" class="img-fluid rounded border border-secondary mb-3" style="max-height: 250px; display: none;">
                 <p id="det-no-foto" class="small text-secondary fst-italic">Tidak ada foto</p>
-                
                 </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalSiswa" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary p-2"><h6 class="modal-title">Tambah Siswa (Ke Database HP)</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body p-3">
-                <div class="row g-2 mb-2">
-                    <div class="col-4"><input type="text" id="batch-kelas" class="form-control form-control-sm" placeholder="Kls (7A)"></div>
-                    <div class="col-8"><input type="text" id="batch-wali" class="form-control form-control-sm" placeholder="Nama Wali"></div>
-                </div>
-                <textarea id="input-bulk-siswa" class="form-control form-control-sm" rows="5" placeholder="Paste nama siswa (1 baris 1 nama)..."></textarea>
-                <div class="d-flex justify-content-between mt-3">
-                    <span class="small text-muted" id="count-siswa">Loading...</span>
-                    <button class="btn btn-success btn-sm" onclick="tambahDataSiswaBatch()">Simpan ke HP</button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -243,39 +214,61 @@
 
 <script>
     // ==========================================
-    // 1. KONFIGURASI URL GOOGLE SCRIPT (PASTIKAN SUDAH DIISI)
+    // 1. ISI URL GOOGLE SCRIPT DISINI
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJ0TgEKTQjtW34xiiCIWhyfXUGAuybNV1OqBbXTzWqFAEoIVqpPNR6IXTKjXYOYESerw/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOZQC_nOsTkGNhahuAKql5yJfaDd__e5vKYBndQPo8bYKUMssXM-RreWhZbISrqcld/exec"; 
     
-    // ==========================================
-    // 2. DATABASE LOKAL UNTUK SISWA (DEXIE)
-    // ==========================================
-    const db = new Dexie("EDisiplinSiswaDB");
-    db.version(1).stores({ students: "++id, nama, kelas, wali" });
-
-    // --- VARIABLES ---
+    // VARIABLES
     let cachedLogs = [];
+    let onlineStudents = []; // DATABASE SISWA ONLINE
     let chartInstance = null;
     let detailModal = null;
 
     // --- INIT ---
     async function initApp() {
         if(SCRIPT_URL === "PASTE_URL_GOOGLE_SCRIPT_DISINI") {
-            Swal.fire('Konfigurasi Belum Selesai', 'Anda belum memasukkan URL Google Script di kodingan HTML', 'error');
+            Swal.fire('Konfigurasi Error', 'URL Google Script belum diisi!', 'error');
             return;
         }
         detailModal = new bootstrap.Modal(document.getElementById('modalDetail'));
         initChart();
-        loadDataFromCloud();
-        updateStudentCount();
+        
+        // Load Data Secara Paralel (Laporan & Data Siswa)
+        loadLogsFromCloud();
+        loadStudentsFromCloud();
     }
 
-    // --- FUNGSI CARI SISWA (DARI DEXIE) ---
-    async function searchName(val) {
+    // --- 1. LOAD DATA SISWA (ONLINE) ---
+    async function loadStudentsFromCloud() {
+        const loadingEl = document.getElementById('loading-siswa');
+        loadingEl.style.display = 'block';
+        try {
+            // Request dengan parameter action=getSiswa
+            const response = await fetch(SCRIPT_URL + "?action=getSiswa");
+            const data = await response.json();
+            onlineStudents = data; // Simpan ke variabel global
+            console.log("Data Siswa Terambil: " + onlineStudents.length);
+        } catch (error) {
+            console.error("Gagal ambil siswa", error);
+        } finally {
+            loadingEl.style.display = 'none';
+        }
+    }
+
+    // --- 2. CARI SISWA (DARI ARRAY ONLINE) ---
+    function searchName(val) {
         const list = document.getElementById('autocomplete-list');
         list.innerHTML = "";
         if(!val) return;
-        const result = await db.students.filter(s => s.nama.toLowerCase().includes(val.toLowerCase())).limit(5).toArray();
+        
+        // Filter dari variabel onlineStudents (Maks 5 hasil)
+        const result = onlineStudents.filter(s => s.nama.toLowerCase().includes(val.toLowerCase())).slice(0, 5);
+        
+        if(result.length === 0 && onlineStudents.length === 0) {
+            list.innerHTML = '<div class="list-group-item text-danger">Data siswa belum termuat / kosong. Cek koneksi.</div>';
+            return;
+        }
+
         result.forEach(s => {
             const div = document.createElement('div'); div.className = 'list-group-item';
             div.innerHTML = `<b>${s.nama}</b> <small class="text-info ms-2">(${s.kelas})</small>`;
@@ -289,11 +282,11 @@
         });
     }
 
-    // --- CLOUD FUNCTIONS ---
-    async function loadDataFromCloud() {
+    // --- 3. LOAD LOGS (LAPORAN) ---
+    async function loadLogsFromCloud() {
         document.getElementById('loading-badge').style.display = 'inline-block';
         try {
-            const response = await fetch(SCRIPT_URL);
+            const response = await fetch(SCRIPT_URL); // Default action ambil logs
             const data = await response.json();
             cachedLogs = data.reverse(); 
             renderLogs(cachedLogs);
@@ -305,6 +298,7 @@
         }
     }
 
+    // --- SIMPAN DATA ---
     async function prosesSimpan() {
         const btn = document.getElementById('btn-simpan');
         const nama = document.getElementById('nama').value;
@@ -323,7 +317,7 @@
             wali: document.getElementById('wali').value, 
             foto: currentPhoto || "", 
             ttd: canvas.toDataURL(),
-            timestamp: now.getTime(), // ID UNIK
+            timestamp: now.getTime(),
             tglStr: now.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
         };
 
@@ -337,7 +331,7 @@
                 Swal.fire('Sukses', 'Data tersimpan di Google Sheets', 'success');
                 resetForm();
             }
-            loadDataFromCloud();
+            loadLogsFromCloud();
         } catch (error) {
             Swal.fire('Error', 'Gagal mengirim data. Cek koneksi.', 'error');
         } finally {
@@ -345,7 +339,7 @@
         }
     }
 
-    // --- FUNGSI HAPUS DATA ---
+    // --- HAPUS DATA ---
     async function hapusDataCloud(id) {
         const result = await Swal.fire({
             title: 'Hapus Data?', text: "Data akan dihapus permanen dari Google Sheets!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, Hapus!', cancelButtonText: 'Batal'
@@ -356,11 +350,11 @@
                 const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "hapus", id: id }) });
                 const res = await response.json();
                 if(res.result === 'success') {
-                    Swal.fire('Terhapus!', 'Data berhasil dihapus dari Cloud.', 'success');
+                    Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
                     detailModal.hide();
-                    loadDataFromCloud();
+                    loadLogsFromCloud();
                 } else {
-                    Swal.fire('Gagal', 'Data tidak ditemukan di Cloud.', 'error');
+                    Swal.fire('Gagal', 'Data tidak ditemukan.', 'error');
                 }
             } catch (err) {
                 Swal.fire('Error', 'Gagal menghubungi server.', 'error');
@@ -395,47 +389,34 @@
         if(data.foto && data.foto.length > 100) { imgEl.src = data.foto; imgEl.style.display = 'block'; document.getElementById('det-no-foto').style.display='none'; }
         else { imgEl.style.display = 'none'; document.getElementById('det-no-foto').style.display='block'; }
 
-        // Pasang fungsi ke tombol icon
         document.getElementById('btn-hapus-cloud').onclick = () => hapusDataCloud(data.timestamp);
-        document.getElementById('btn-cetak-sp').onclick = () => { detailModal.hide(); generateSP(data); }; // Tombol cetak icon
-
+        document.getElementById('btn-cetak-sp').onclick = () => { detailModal.hide(); generateSP(data); };
         detailModal.show();
     }
 
-    // --- PDF GENERATOR (LAPORAN) ---
+    // --- LAPORAN & EXPORT ---
     async function cetakLaporanPDF() {
-        const { jsPDF } = window.jspdf; 
-        const doc = new jsPDF();
-        
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
         if(cachedLogs.length === 0) return Swal.fire('Kosong', 'Belum ada data', 'info');
-        
-        // --- 1. JUDUL LAPORAN DI TENGAH ---
         const pageWidth = doc.internal.pageSize.getWidth();
-        doc.setFontSize(14);
-        doc.text("LAPORAN KEDISIPLINAN SMPN 110", pageWidth / 2, 15, { align: 'center' });
-        // -------------------------------
-
-        // --- 2. ISI TABEL & JUDUL TABEL DI TENGAH ---
+        doc.setFontSize(14); doc.text("LAPORAN KEDISIPLINAN SMPN 110", pageWidth / 2, 15, { align: 'center' });
         doc.autoTable({
             head: [['Tanggal', 'Nama', 'Kelas', 'Level', 'Keterangan']],
             body: cachedLogs.map(l => [l.tglStr.split(',')[0], l.nama, l.kelas, l.level, l.ket]),
-            startY: 28, 
-            theme: 'grid', 
-            styles: { 
-                fontSize: 8,
-                halign: 'center', // Rata Tengah Horizontal (Isi Tabel)
-                valign: 'middle'  // Rata Tengah Vertikal
-            },
-            headStyles: {
-                halign: 'center', // Rata Tengah Horizontal (Judul Tabel)
-                fillColor: [60, 60, 60],
-                textColor: [255, 255, 255]
-            }
+            startY: 28, theme: 'grid', 
+            styles: { fontSize: 8, halign: 'center', valign: 'middle' },
+            headStyles: { halign: 'center', fillColor: [60, 60, 60], textColor: [255, 255, 255] }
         });
         doc.save(`Laporan_Disiplin_Online.pdf`);
     }
 
-    // --- PDF GENERATOR (SURAT PANGGILAN) ---
+    function exportExcel() {
+        let csv = "Timestamp,Tanggal,Nama,Kelas,Level,Keterangan\n";
+        cachedLogs.forEach(l => { csv += `"${l.timestamp}","${l.tglStr}","${l.nama}","${l.kelas}","${l.level}","${l.ket}"\n`; });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'Laporan_Disiplin_Cloud.csv'; a.click();
+    }
+
+    // --- PDF SP ---
     async function generateSP(data) {
         Swal.showLoading();
         const year = new Date(data.timestamp).getFullYear();
@@ -462,7 +443,7 @@
         pdf.save(`SP_${nomorUrut}_${data.nama}.pdf`); Swal.close();
     }
 
-    // --- UTILS ---
+    // --- CHART & UTILS ---
     async function initChart() {
         const ctx = document.getElementById('grafikPelanggaran').getContext('2d');
         chartInstance = new Chart(ctx, {
@@ -515,40 +496,6 @@
         document.getElementById('nama').value = ""; document.getElementById('kelas').value = ""; document.getElementById('wali').value = ""; document.getElementById('ket').value = "";
         document.getElementById('preview-img').style.display = 'none'; document.getElementById('cam-label').style.display = 'block';
         currentPhoto = null; clearSig();
-    }
-    
-    function exportExcel() {
-        let csv = "Timestamp,Tanggal,Nama,Kelas,Level,Keterangan\n";
-        cachedLogs.forEach(l => { csv += `"${l.timestamp}","${l.tglStr}","${l.nama}","${l.kelas}","${l.level}","${l.ket}"\n`; });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'Laporan_Disiplin_Cloud.csv'; a.click();
-    }
-    
-    // --- MANAJEMEN SISWA (LOCAL DB) ---
-    async function tambahDataSiswaBatch() {
-        const raw = document.getElementById('input-bulk-siswa').value;
-        const kelas = document.getElementById('batch-kelas').value;
-        const wali = document.getElementById('batch-wali').value;
-        if(!raw || !kelas) return Swal.fire('Gagal','Data belum lengkap','warning');
-        
-        const data = raw.split('\n').filter(n=>n.trim().length>0).map(nama => ({nama: nama.trim(), kelas, wali}));
-        await db.students.bulkAdd(data); 
-        updateStudentCount(); 
-        Swal.fire('Sukses', `${data.length} siswa ditambahkan ke Database HP`,'success');
-        bootstrap.Modal.getInstance(document.getElementById('modalSiswa')).hide();
-        document.getElementById('input-bulk-siswa').value = "";
-    }
-    
-    async function updateStudentCount() { 
-        const count = await db.students.count();
-        document.getElementById('count-siswa').innerText = `Total di HP: ${count} Siswa`; 
-    }
-    
-    async function resetDatabase() { 
-        if((await Swal.fire({title:'Hapus Data Siswa?', text:'Data siswa di HP ini akan dihapus. Data laporan Cloud AMAN.', icon:'warning', showCancelButton:true})).isConfirmed){ 
-            await db.students.clear(); 
-            updateStudentCount();
-            Swal.fire('Terhapus', 'Database siswa di HP kosong.', 'success');
-        } 
     }
 
     initApp();
